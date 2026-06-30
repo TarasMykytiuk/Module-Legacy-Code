@@ -197,14 +197,16 @@ async function postBloom(content, original_sender=null) {
   try {
     const data = await _apiRequest("/bloom", {
       method: "POST",
-      body: JSON.stringify({content}),
+      body: JSON.stringify({
+        content: content,
+        original_sender: original_sender
+      }),
     });
 
     if (data.success) {
       await getBlooms();
       await getProfile(state.currentUser);
     }
-
     return data;
   } catch (error) {
     // Error already handled by _apiRequest
@@ -215,15 +217,11 @@ async function postBloom(content, original_sender=null) {
 async function reBloom(bloomId){
   try {
     const bloom = await getBloom(bloomId);
+    console.log(bloom.original_sender_id)
     if (!bloom.original_sender){
       bloom.original_sender = bloom.sender;
     }
     await postBloom(bloom.content, bloom.original_sender);
-    console.log(bloom.id);
-    console.log(bloom.sender);
-    console.log(bloom.original_sender);
-    console.log(bloom.content);
-    console.log(bloom.sent_timestamp);
     return bloom.content;
   } catch (error) {
     console.log(error)

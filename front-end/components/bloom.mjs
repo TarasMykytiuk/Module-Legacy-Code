@@ -27,13 +27,14 @@ const createBloom = (template, bloom) => {
   const reBloomCountDiv = bloomFrag.querySelector("[data-rebloom-count]");
   const reBloomButton = bloomFrag.querySelector("[data-rebloom]");
   reBloomButton.addEventListener("click", async () =>{
-    let response = await apiService.reBloom(bloom.id);
+    const response = await apiService.reBloom(bloom.id);
   });
 
   bloomArticle.setAttribute("data-bloom-id", bloom.id);
   bloomUsername.setAttribute("href", `/profile/${bloom.sender}`);
   bloomUsername.textContent = bloom.sender;
-  if (bloom.original_sender){
+  console.log(bloom);
+  if (bloom.original_sender_id !== 0){
     bloomUsername.textContent = "Rebllomed by: " + bloom.sender;
     bloomOriginalUsername.setAttribute("href", `/profile/${bloom.original_sender}`);
     bloomOriginalUsername.textContent = "Originaly bloomed by: " + bloom.original_sender;
