@@ -11,7 +11,7 @@
  * "sent_timestamp": "datetime as ISO 8601 formatted string"}
 
  */
-import { apiService } from "../index.mjs";
+import { apiService, state } from "../index.mjs";
 
 const createBloom = (template, bloom) => {
   if (!bloom) return;
@@ -24,17 +24,21 @@ const createBloom = (template, bloom) => {
   const bloomTime = bloomFrag.querySelector("[data-time]");
   const bloomTimeLink = bloomFrag.querySelector("a:has(> [data-time])");
   const bloomContent = bloomFrag.querySelector("[data-content]");
-  const reBloomCountDiv = bloomFrag.querySelector("[data-rebloom-count]");
   const reBloomButton = bloomFrag.querySelector("[data-rebloom]");
-  reBloomButton.addEventListener("click", async () =>{
-    const response = await apiService.reBloom(bloom.id);
-  });
-
+  const currentUser = state["currentUser"];
+  if (currentUser !== bloom.sender){
+    reBloomButton.addEventListener("click", async () =>{
+      const response = await apiService.reBloom(bloom.id);
+    });
+  } else {
+    //this part prevents user from reblooming his own posts
+    reBloomButton.remove();
+  }
+  
   bloomArticle.setAttribute("data-bloom-id", bloom.id);
   bloomUsername.setAttribute("href", `/profile/${bloom.sender}`);
   bloomUsername.textContent = bloom.sender;
-  console.log(bloom);
-  if (bloom.original_sender_id !== 0){
+  if (bloom.original_sender){
     bloomUsername.textContent = "Rebllomed by: " + bloom.sender;
     bloomOriginalUsername.setAttribute("href", `/profile/${bloom.original_sender}`);
     bloomOriginalUsername.textContent = "Originaly bloomed by: " + bloom.original_sender;

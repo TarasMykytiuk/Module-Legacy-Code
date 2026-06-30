@@ -11,24 +11,23 @@ from data.users import User
 class Bloom:
     id: int
     sender: User
-    original_sender_id: int
+    original_sender: str
     content: str
     sent_timestamp: datetime.datetime
 
 
-def add_bloom(*, sender: User, original_sender: User, content: str) -> Bloom:
+def add_bloom(*, sender: User, original_sender: str, content: str) -> Bloom:
     hashtags = [word[1:] for word in content.split(" ") if word.startswith("#")]
 
     now = datetime.datetime.now(tz=datetime.UTC)
     bloom_id = int(now.timestamp() * 1000000)
-    original_sender_id = original_sender.id if original_sender else 0
     with db_cursor() as cur:
         cur.execute(
-            "INSERT INTO blooms (id, sender_id, original_sender_id, content, send_timestamp) VALUES (%(bloom_id)s, %(sender_id)s, %(original_sender_id)s, %(content)s, %(timestamp)s)",
+            "INSERT INTO blooms (id, sender_id, original_sender, content, send_timestamp) VALUES (%(bloom_id)s, %(sender_id)s, %(original_sender)s, %(content)s, %(timestamp)s)",
             dict(
                 bloom_id=bloom_id,
                 sender_id=sender.id,
-                original_sender_id=original_sender_id,
+                original_sender=original_sender,
                 content=content,
                 timestamp=datetime.datetime.now(datetime.UTC),
             ),
@@ -57,7 +56,7 @@ def get_blooms_for_user(
 
         cur.execute(
             f"""SELECT
-              blooms.id, users.username, original_sender_id, content, send_timestamp
+              blooms.id, users.username, original_sender, content, send_timestamp
             FROM
               blooms INNER JOIN users ON users.id = blooms.sender_id
             WHERE
@@ -71,12 +70,12 @@ def get_blooms_for_user(
         rows = cur.fetchall()
         blooms = []
         for row in rows:
-            bloom_id, sender_username, original_sender_id, content, timestamp = row
+            bloom_id, sender_username, original_sender, content, timestamp = row
             blooms.append(
                 Bloom(
                     id=bloom_id,
                     sender=sender_username,
-                    original_sender_id=original_sender_id,
+                    original_sender=original_sender,
                     content=content,
                     sent_timestamp=timestamp,
                 )
@@ -87,17 +86,17 @@ def get_blooms_for_user(
 def get_bloom(bloom_id: int) -> Optional[Bloom]:
     with db_cursor() as cur:
         cur.execute(
-            "SELECT blooms.id, users.username, original_sender_id, content, send_timestamp FROM blooms INNER JOIN users ON users.id = blooms.sender_id WHERE blooms.id = %s",
+            "SELECT blooms.id, users.username, original_sender, content, send_timestamp FROM blooms INNER JOIN users ON users.id = blooms.sender_id WHERE blooms.id = %s",
             (bloom_id,),
         )
         row = cur.fetchone()
         if row is None:
             return None
-        bloom_id, sender_username, original_sender_id, content, timestamp = row
+        bloom_id, sender_username, original_sender, content, timestamp = row
         return Bloom(
             id=bloom_id,
             sender=sender_username,
-            original_sender_id=original_sender_id,
+            original_sender=original_sender,
             content=content,
             sent_timestamp=timestamp,
         )
@@ -113,7 +112,7 @@ def get_blooms_with_hashtag(
     with db_cursor() as cur:
         cur.execute(
             f"""SELECT
-              blooms.id, users.username, original_sender_id, content, send_timestamp
+              blooms.id, users.username, original_sender, content, send_timestamp
             FROM
               blooms INNER JOIN hashtags ON blooms.id = hashtags.bloom_id INNER JOIN users ON blooms.sender_id = users.id
             WHERE
@@ -126,12 +125,12 @@ def get_blooms_with_hashtag(
         rows = cur.fetchall()
         blooms = []
         for row in rows:
-            bloom_id, sender_username, original_sender_id, content, timestamp = row
+            bloom_id, sender_username, original_sender, content, timestamp = row
             blooms.append(
                 Bloom(
                     id=bloom_id,
                     sender=sender_username,
-                    original_sender_id=original_sender_id,
+                    original_sender=original_sender,
                     content=content,
                     sent_timestamp=timestamp,
                 )

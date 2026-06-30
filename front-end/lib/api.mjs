@@ -217,7 +217,6 @@ async function postBloom(content, original_sender=null) {
 async function reBloom(bloomId){
   try {
     const bloom = await getBloom(bloomId);
-    console.log(bloom.original_sender_id)
     if (!bloom.original_sender){
       bloom.original_sender = bloom.sender;
     }

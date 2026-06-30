@@ -158,8 +158,8 @@ def send_bloom():
 
     user = get_current_user()
     original_sender = None
-    if request.json["original_sender"]:
-        original_sender = get_user(request.json["original_sender"])
+    if request.json.get("original_sender"):
+        original_sender = request.json["original_sender"]
 
     blooms.add_bloom(sender=user, original_sender=original_sender, content=request.json["content"])
 
